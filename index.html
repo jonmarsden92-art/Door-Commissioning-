@@ -2,370 +2,248 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CommSign Pro | Professional Sign-Off</title>
+    <title>CommSign Pro | Door Commissioning</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #f3f4f6;
+            --bg: #f8fafc;
             --surface: #ffffff;
-            --primary: #2563eb; /* Professional Blue */
-            --primary-hover: #1d4ed8;
-            --secondary: #64748b;
-            --border: #e5e7eb;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --success: #10b981;
-            --danger: #ef4444;
-            --radius: 12px;
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --radius: 8px;
+            --category-bg: #f1f5f9;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            line-height: 1.5;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        .header { background: #fff; border-bottom: 1px solid var(--border); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; sticky; top:0; z-index:100; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-header { padding: 12px 20px; border-bottom: 1px solid var(--border); background: #fafafa; font-weight: 700; font-size: 14px; text-transform: uppercase; color: var(--primary); }
+        .card-body { padding: 20px; }
 
-        /* ── HEADER ── */
-        .app-header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .logo { font-weight: 700; font-size: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .logo span { color: var(--text-main); }
-        .badge {
-            background: #dbeafe;
-            color: var(--primary);
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+        .group-title { font-size: 12px; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin: 15px 0 10px 0; border-left: 3px solid var(--primary); padding-left: 10px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 11px; font-weight: 600; color: var(--text-light); }
+        input, select, textarea { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; width: 100%; }
 
-        /* ── LAYOUT ── */
-        .container { max-width: 900px; margin: 1.5rem auto; padding: 0 1rem; }
+        .check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+        .check-item { display: flex; align-items: center; justify-content: space-between; background: var(--category-bg); padding: 8px 12px; border-radius: 6px; font-size: 12px; }
 
-        .card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-        }
-        .card-header {
-            padding: 1rem 1.25rem;
-            background: #fafafa;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            display: flex;
-            justify-content: space-between;
-        }
-        .card-body { padding: 1.25rem; }
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 20px; }
+        .btn-outline { background: white; border: 1px solid var(--border); }
+        
+        .photo-box { border: 2px dashed var(--border); padding: 15px; text-align: center; border-radius: var(--radius); margin-top: 10px; cursor: pointer; }
+        .photo-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-top: 10px; }
 
-        /* ── FORMS ── */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-        input:focus { outline: none; border-color: var(--primary); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; background: #f8fafc; padding: 10px; border-bottom: 2px solid var(--border); }
+        td { padding: 10px; border-bottom: 1px solid var(--border); }
 
-        /* ── BUTTONS ── */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 0.6rem 1.2rem;
-            font-weight: 600; font-size: 0.875rem;
-            border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;
-            gap: 8px;
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
-        .btn-block { width: 100%; }
+        #sig-canvas { border: 1px solid var(--border); width: 100%; height: 120px; background: #fff; margin-top: 10px; }
 
-        /* ── PHOTO UPLOAD UI ── */
-        .photo-preview-container {
-            margin-top: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .photo-thumbnail {
-            width: 60px; height: 60px;
-            border-radius: 6px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-        }
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        .file-input-wrapper input[type=file] {
-            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer;
-        }
-
-        /* ── TABLE ── */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { text-align: left; background: #f9fafb; padding: 0.75rem; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
-        .status-pill { padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 0.7rem; }
-        .status-pass { background: #d1fae5; color: #065f46; }
-        .status-fail { background: #fee2e2; color: #991b1b; }
-
-        /* ── SIGNATURE ── */
-        #sig-canvas {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            background: #fff;
-            width: 100%; height: 180px;
-            cursor: crosshair;
-            touch-action: none;
-        }
-
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<header class="app-header">
-    <div class="logo">✔️ CommSign <span>Pro</span></div>
-    <div class="badge" id="countBadge">0 Items Logged</div>
-</header>
+<div class="header">
+    <div style="font-weight: 800; font-size: 18px;">CommSign <span style="color:var(--primary)">PRO</span></div>
+    <div id="itemCount" style="font-size:12px; font-weight:600; color:var(--text-light)">0 Doors Logged</div>
+</div>
 
 <div class="container">
     
     <div class="card">
-        <div class="card-header">Project Information</div>
-        <div class="card-body">
-            <div class="grid">
-                <div class="form-group">
-                    <label>Project Ref</label>
-                    <input type="text" id="projRef" placeholder="e.g. PRJ-101">
-                </div>
-                <div class="form-group">
-                    <label>Engineer Name</label>
-                    <input type="text" id="engName" placeholder="Your Name">
-                </div>
-                <div class="form-group">
-                    <label>Client / Site</label>
-                    <input type="text" id="clientSite" placeholder="Site Name">
-                </div>
-            </div>
+        <div class="card-header">Project Header</div>
+        <div class="card-body grid">
+            <div class="form-group"><label>Site Name</label><input type="text" id="siteName"></div>
+            <div class="form-group"><label>Engineer</label><input type="text" id="engName"></div>
+            <div class="form-group"><label>Date</label><input type="date" id="reportDate"></div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header">Add Commissioning Item</div>
+        <div class="card-header">New Door Inspection</div>
         <div class="card-body">
-            <div class="grid">
-                <div class="form-group">
-                    <label>Asset ID / Tag</label>
-                    <input type="text" id="assetTag" placeholder="e.g. AC-001">
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="assetStatus">
-                        <option value="PASS">Pass</option>
-                        <option value="FAIL">Fail</option>
-                        <option value="OBS">Observation</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Findings / Notes</label>
-                <textarea id="assetNotes" rows="2" placeholder="Describe inspection findings..."></textarea>
-            </div>
             
-            <div class="form-group">
-                <label>Photos</label>
-                <div class="file-input-wrapper">
-                    <button class="btn btn-outline">📸 Capture Photo</button>
-                    <input type="file" id="photoInput" accept="image/*" capture="environment">
-                </div>
-                <div id="photoPreview" class="photo-preview-container"></div>
+            <div class="group-title">1. Door Details</div>
+            <div class="grid">
+                <div class="form-group"><label>Room Name</label><input type="text" id="roomName"></div>
+                <div class="form-group"><label>Door Number</label><input type="text" id="doorNum"></div>
+                <div class="form-group"><label>Door Type</label><input type="text" id="doorType"></div>
+                <div class="form-group"><label>Fire Rating</label><input type="text" id="fireRating"></div>
             </div>
 
-            <button class="btn btn-primary btn-block" onclick="saveItem()">Add Item to Schedule</button>
+            <div class="group-title">2. Function Checks</div>
+            <div class="check-grid">
+                <div class="check-item">General Function OK? <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">Locks (Inc Maglocks) <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">Ironmongery <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">Vision Panel <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">Door Closer <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">SwingStop Locks <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">SwingStop 180° <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+                <div class="check-item">SWITCH Lock Smooth <select class="check-val"><option>PASS</option><option>FAIL</option><option>N/A</option></select></div>
+            </div>
+
+            <div class="group-title">3. Gap Compliance (mm)</div>
+            <div class="grid">
+                <div class="form-group"><label>Head Gap (2-4mm)</label><input type="text" id="gapHead"></div>
+                <div class="form-group"><label>Edge Gap (2-4mm)</label><input type="text" id="gapEdge"></div>
+                <div class="form-group"><label>Threshold (Up to 8mm)</label><input type="text" id="gapThresh"></div>
+            </div>
+
+            <div class="group-title">4. Photo Documentation</div>
+            <div class="photo-box" onclick="document.getElementById('fileInput').click()">
+                <span id="photoStatus">📸 Click to Capture Door Photo</span>
+                <input type="file" id="fileInput" hidden accept="image/*" capture="environment">
+                <div id="previewContainer"></div>
+            </div>
+
+            <div class="form-group" style="margin-top:15px;">
+                <label>PM Notes & Actions</label>
+                <textarea id="pmNotes" rows="2"></textarea>
+            </div>
+
+            <button class="btn btn-primary" onclick="addDoor()">Save Door to Schedule</button>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header">Inspection Schedule</div>
-        <div class="table-container">
+        <div class="card-header">Door Schedule</div>
+        <div style="overflow-x: auto;">
             <table>
                 <thead>
                     <tr>
-                        <th>Tag</th>
+                        <th>Room</th>
+                        <th>Door #</th>
                         <th>Status</th>
+                        <th>Gaps</th>
                         <th>Photo</th>
-                        <th>Notes</th>
                         <th></th>
                     </tr>
                 </thead>
-                <tbody id="scheduleBody">
-                    </tbody>
+                <tbody id="scheduleBody"></tbody>
             </table>
         </div>
         <div class="card-body">
-            <button class="btn btn-outline btn-block" onclick="exportExcel()">⬇️ Download Excel Report</button>
+            <button class="btn btn-outline" style="width:100%" onclick="exportToExcel()">📊 Export Full Spreadsheet</button>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header">Client Sign-Off</div>
+        <div class="card-header">Client Witness Sign-Off</div>
         <div class="card-body">
-            <div class="form-group">
-                <label>Witness Name</label>
-                <input type="text" id="witnessName" placeholder="Print Name">
-            </div>
-            <label>Signature</label>
+            <div class="form-group"><label>Witness Name</label><input type="text" id="witness"></div>
             <canvas id="sig-canvas"></canvas>
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn btn-outline" onclick="clearSig()">Clear</button>
-                <button class="btn btn-primary" onclick="alert('Signature Saved')">Confirm Sign-Off</button>
-            </div>
+            <button class="btn btn-outline" style="margin-top:10px" onclick="clearSig()">Clear Signature</button>
         </div>
     </div>
-
 </div>
 
 <script>
-    let schedule = [];
-    let currentPhotoBase64 = "";
+    let doors = [];
+    let lastPhoto = "";
 
-    // Handle Photo Input
-    document.getElementById('photoInput').addEventListener('change', function(e) {
+    document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+
+    // Photo Handling
+    document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(event) {
-                currentPhotoBase64 = event.target.result;
-                document.getElementById('photoPreview').innerHTML = `<img src="${currentPhotoBase64}" class="photo-thumbnail">`;
+            reader.onload = function(f) {
+                lastPhoto = f.target.result;
+                document.getElementById('previewContainer').innerHTML = `<img src="${lastPhoto}" class="photo-preview">`;
+                document.getElementById('photoStatus').innerText = "✅ Photo Captured";
             };
             reader.readAsDataURL(file);
         }
     });
 
-    function saveItem() {
-        const tag = document.getElementById('assetTag').value;
-        const status = document.getElementById('assetStatus').value;
-        const notes = document.getElementById('assetNotes').value;
-
-        if (!tag) { alert("Please enter a Tag ID"); return; }
-
-        const item = {
+    function addDoor() {
+        const door = {
             id: Date.now(),
-            tag, status, notes,
-            photo: currentPhotoBase64
+            room: document.getElementById('roomName').value,
+            num: document.getElementById('doorNum').value,
+            type: document.getElementById('doorType').value,
+            rating: document.getElementById('fireRating').value,
+            gaps: `${document.getElementById('gapHead').value}/${document.getElementById('gapEdge').value}/${document.getElementById('gapThresh').value}`,
+            notes: document.getElementById('pmNotes').value,
+            photo: lastPhoto
         };
 
-        schedule.push(item);
+        if(!door.room || !door.num) return alert("Room and Door Number required");
+
+        doors.push(door);
         renderTable();
-        
-        // Reset Item Fields
-        document.getElementById('assetTag').value = "";
-        document.getElementById('assetNotes').value = "";
-        document.getElementById('photoPreview').innerHTML = "";
-        currentPhotoBase64 = "";
+        resetForm();
     }
 
     function renderTable() {
-        const tbody = document.getElementById('scheduleBody');
-        tbody.innerHTML = schedule.map(item => `
+        const body = document.getElementById('scheduleBody');
+        body.innerHTML = doors.map(d => `
             <tr>
-                <td><strong>${item.tag}</strong></td>
-                <td><span class="status-pill ${item.status === 'PASS' ? 'status-pass' : 'status-fail'}">${item.status}</span></td>
-                <td>${item.photo ? `<img src="${item.photo}" class="photo-thumbnail">` : '-'}</td>
-                <td style="color:var(--text-muted)">${item.notes}</td>
-                <td><button onclick="deleteItem(${item.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;">✕</button></td>
+                <td><b>${d.room}</b></td>
+                <td>${d.num}</td>
+                <td><span style="color:green; font-weight:700">OK</span></td>
+                <td style="color:var(--text-light)">${d.gaps}</td>
+                <td>${d.photo ? '📸' : '-'}</td>
+                <td><button onclick="deleteDoor(${d.id})" style="border:none; background:none; color:red; cursor:pointer;">✕</button></td>
             </tr>
         `).join('');
-        document.getElementById('countBadge').innerText = `${schedule.length} Items Logged`;
+        document.getElementById('itemCount').innerText = `${doors.length} Doors Logged`;
     }
 
-    function deleteItem(id) {
-        schedule = schedule.filter(i => i.id !== id);
+    function resetForm() {
+        ['roomName','doorNum','gapHead','gapEdge','gapThresh','pmNotes'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('previewContainer').innerHTML = "";
+        document.getElementById('photoStatus').innerText = "📸 Click to Capture Door Photo";
+        lastPhoto = "";
+    }
+
+    function deleteDoor(id) {
+        doors = doors.filter(d => d.id !== id);
         renderTable();
     }
 
-    // Canvas Signature Logic
+    // Signature
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
-
-    function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        ctx.scale(ratio, ratio);
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
-    canvas.addEventListener('touchend', stopDraw);
-
-    function startDraw(e) {
-        drawing = true;
-        ctx.beginPath();
-        const rect = canvas.getBoundingClientRect();
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    }
-    function draw(e) {
-        if (!drawing) return;
+    canvas.addEventListener('mousedown', () => drawing = true);
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mousemove', (e) => {
+        if(!drawing) return;
         const rect = canvas.getBoundingClientRect();
         ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.lineWidth = 2; ctx.strokeStyle = "#000"; ctx.stroke();
-    }
-    function stopDraw() { drawing = false; }
-    function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        ctx.stroke();
+    });
+    function clearSig() { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.beginPath(); }
 
-    // Export Excel
-    function exportExcel() {
-        const headerInfo = [
-            ["COMMISSIONING REPORT"],
-            ["Project:", document.getElementById('projRef').value],
+    function exportToExcel() {
+        const data = [
+            ["DOOR COMMISSIONING REPORT"],
+            ["Site:", document.getElementById('siteName').value],
             ["Engineer:", document.getElementById('engName').value],
-            ["Client/Site:", document.getElementById('clientSite').value],
             [],
-            ["Tag/ID", "Status", "Notes"]
+            ["Room Name", "Door Number", "Type", "Fire Rating", "Gaps (H/E/T)", "PM Notes"]
         ];
-        const rows = schedule.map(i => [i.tag, i.status, i.notes]);
-        const ws = XLSX.utils.aoa_to_sheet([...headerInfo, ...rows]);
+        doors.forEach(d => data.push([d.room, d.num, d.type, d.rating, d.gaps, d.notes]));
+        const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Inspection");
-        XLSX.writeFile(wb, "CommReport.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Schedule");
+        XLSX.writeFile(wb, "Door_Commissioning.xlsx");
     }
 </script>
 
