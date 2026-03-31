@@ -2,32 +2,372 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commissioning App</title>
+    <title>CommSign Pro | Professional Sign-Off</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg: #f5f5f7;
+            --bg: #f3f4f6;
             --surface: #ffffff;
-            --surface2: #f9f9fb;
-            --surface3: #f0f0f3;
-            --border: #e0e0e8;
-            --text: #1a1a1f;
-            --text2: #666688;
-            --text3: #999aaa;
-            --accent: #4ecdc4;
-            --accent2: #ff6b35;
-            --accent3: #ffe66d;
+            --primary: #2563eb; /* Professional Blue */
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --border: #e5e7eb;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
         }
-        /* Add other styles as necessary, maintaining functionality */
+
+        /* ── HEADER ── */
+        .app-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-weight: 700; font-size: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .logo span { color: var(--text-main); }
+        .badge {
+            background: #dbeafe;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ── LAYOUT ── */
+        .container { max-width: 900px; margin: 1.5rem auto; padding: 0 1rem; }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 1rem 1.25rem;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+        }
+        .card-body { padding: 1.25rem; }
+
+        /* ── FORMS ── */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.6rem 1.2rem;
+            font-weight: 600; font-size: 0.875rem;
+            border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;
+            gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-block { width: 100%; }
+
+        /* ── PHOTO UPLOAD UI ── */
+        .photo-preview-container {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .photo-thumbnail {
+            width: 60px; height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer;
+        }
+
+        /* ── TABLE ── */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; background: #f9fafb; padding: 0.75rem; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+        td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        .status-pill { padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 0.7rem; }
+        .status-pass { background: #d1fae5; color: #065f46; }
+        .status-fail { background: #fee2e2; color: #991b1b; }
+
+        /* ── SIGNATURE ── */
+        #sig-canvas {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            width: 100%; height: 180px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Commissioning App</h1>
-    <p>This is a commissioning application.</p>
-    <!-- Your other HTML content and JavaScript functionality here -->
+
+<header class="app-header">
+    <div class="logo">✔️ CommSign <span>Pro</span></div>
+    <div class="badge" id="countBadge">0 Items Logged</div>
+</header>
+
+<div class="container">
+    
+    <div class="card">
+        <div class="card-header">Project Information</div>
+        <div class="card-body">
+            <div class="grid">
+                <div class="form-group">
+                    <label>Project Ref</label>
+                    <input type="text" id="projRef" placeholder="e.g. PRJ-101">
+                </div>
+                <div class="form-group">
+                    <label>Engineer Name</label>
+                    <input type="text" id="engName" placeholder="Your Name">
+                </div>
+                <div class="form-group">
+                    <label>Client / Site</label>
+                    <input type="text" id="clientSite" placeholder="Site Name">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Add Commissioning Item</div>
+        <div class="card-body">
+            <div class="grid">
+                <div class="form-group">
+                    <label>Asset ID / Tag</label>
+                    <input type="text" id="assetTag" placeholder="e.g. AC-001">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="assetStatus">
+                        <option value="PASS">Pass</option>
+                        <option value="FAIL">Fail</option>
+                        <option value="OBS">Observation</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Findings / Notes</label>
+                <textarea id="assetNotes" rows="2" placeholder="Describe inspection findings..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Photos</label>
+                <div class="file-input-wrapper">
+                    <button class="btn btn-outline">📸 Capture Photo</button>
+                    <input type="file" id="photoInput" accept="image/*" capture="environment">
+                </div>
+                <div id="photoPreview" class="photo-preview-container"></div>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="saveItem()">Add Item to Schedule</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Inspection Schedule</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Status</th>
+                        <th>Photo</th>
+                        <th>Notes</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    </tbody>
+            </table>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-outline btn-block" onclick="exportExcel()">⬇️ Download Excel Report</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Client Sign-Off</div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Witness Name</label>
+                <input type="text" id="witnessName" placeholder="Print Name">
+            </div>
+            <label>Signature</label>
+            <canvas id="sig-canvas"></canvas>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-outline" onclick="clearSig()">Clear</button>
+                <button class="btn btn-primary" onclick="alert('Signature Saved')">Confirm Sign-Off</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let schedule = [];
+    let currentPhotoBase64 = "";
+
+    // Handle Photo Input
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentPhotoBase64 = event.target.result;
+                document.getElementById('photoPreview').innerHTML = `<img src="${currentPhotoBase64}" class="photo-thumbnail">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function saveItem() {
+        const tag = document.getElementById('assetTag').value;
+        const status = document.getElementById('assetStatus').value;
+        const notes = document.getElementById('assetNotes').value;
+
+        if (!tag) { alert("Please enter a Tag ID"); return; }
+
+        const item = {
+            id: Date.now(),
+            tag, status, notes,
+            photo: currentPhotoBase64
+        };
+
+        schedule.push(item);
+        renderTable();
+        
+        // Reset Item Fields
+        document.getElementById('assetTag').value = "";
+        document.getElementById('assetNotes').value = "";
+        document.getElementById('photoPreview').innerHTML = "";
+        currentPhotoBase64 = "";
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('scheduleBody');
+        tbody.innerHTML = schedule.map(item => `
+            <tr>
+                <td><strong>${item.tag}</strong></td>
+                <td><span class="status-pill ${item.status === 'PASS' ? 'status-pass' : 'status-fail'}">${item.status}</span></td>
+                <td>${item.photo ? `<img src="${item.photo}" class="photo-thumbnail">` : '-'}</td>
+                <td style="color:var(--text-muted)">${item.notes}</td>
+                <td><button onclick="deleteItem(${item.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;">✕</button></td>
+            </tr>
+        `).join('');
+        document.getElementById('countBadge').innerText = `${schedule.length} Items Logged`;
+    }
+
+    function deleteItem(id) {
+        schedule = schedule.filter(i => i.id !== id);
+        renderTable();
+    }
+
+    // Canvas Signature Logic
+    const canvas = document.getElementById('sig-canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        ctx.scale(ratio, ratio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
+    canvas.addEventListener('touchend', stopDraw);
+
+    function startDraw(e) {
+        drawing = true;
+        ctx.beginPath();
+        const rect = canvas.getBoundingClientRect();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+    function draw(e) {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.lineWidth = 2; ctx.strokeStyle = "#000"; ctx.stroke();
+    }
+    function stopDraw() { drawing = false; }
+    function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // Export Excel
+    function exportExcel() {
+        const headerInfo = [
+            ["COMMISSIONING REPORT"],
+            ["Project:", document.getElementById('projRef').value],
+            ["Engineer:", document.getElementById('engName').value],
+            ["Client/Site:", document.getElementById('clientSite').value],
+            [],
+            ["Tag/ID", "Status", "Notes"]
+        ];
+        const rows = schedule.map(i => [i.tag, i.status, i.notes]);
+        const ws = XLSX.utils.aoa_to_sheet([...headerInfo, ...rows]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inspection");
+        XLSX.writeFile(wb, "CommReport.xlsx");
+    }
+</script>
+
 </body>
 </html>
