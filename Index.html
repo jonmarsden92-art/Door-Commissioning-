@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <title>Commissioning Pro | Project Sign-Off</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0f">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg: #0a0a0f;
@@ -18,8 +17,8 @@
             --surface2: #1a1a24;
             --surface3: #22222f;
             --border: #2a2a3a;
-            --accent: #4ecdc4; /* Changed to Teal for Commissioning */
-            --accent2: #ff6b35; /* Orange for alerts/actions */
+            --accent: #4ecdc4; /* Commissioning Teal */
+            --accent2: #ff6b35; /* Alert Orange */
             --accent3: #ffe66d;
             --text: #e8e8f0;
             --text2: #8888aa;
@@ -32,6 +31,7 @@
             --radius: 10px;
             --radius-sm: 6px;
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body {
@@ -129,30 +129,27 @@
             font-family: var(--font-mono);
             font-size: 14px;
             padding: 10px 12px;
-            transition: border-color 0.15s, background 0.15s;
-            -webkit-appearance: none;
+            transition: border-color 0.15s;
         }
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--accent);
             background: var(--surface3);
         }
-        select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555570' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
-        
+
         /* ── BUTTONS ── */
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 7px;
             padding: 11px 18px;
             font-family: var(--font-display);
             font-size: 13px; font-weight: 700;
-            letter-spacing: 0.5px;
             border: none; border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.15s;
+            transition: transform 0.1s;
         }
-        .btn-primary { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(78,205,196,0.2); }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: #000; }
         .btn-secondary { background: var(--surface3); color: var(--text); border: 1px solid var(--border); }
-        .btn-danger { background: var(--danger); color: #fff; }
         .btn-success { background: var(--success); color: #000; }
         .btn-full { width: 100%; }
 
@@ -169,11 +166,11 @@
 
         /* ── SIGNATURE ── */
         #sig-canvas {
-            background: var(--surface2);
-            border: 1px solid var(--border);
+            background: #fff;
             border-radius: var(--radius-sm);
             width: 100%; height: 150px;
             touch-action: none;
+            cursor: crosshair;
         }
 
         .status-badge {
@@ -181,6 +178,10 @@
         }
         .status-pass { background: rgba(0,214,143,0.2); color: var(--success); }
         .status-fail { background: rgba(255,59,92,0.2); color: var(--danger); }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -202,19 +203,19 @@
         <div class="form-grid">
             <div class="form-group">
                 <label class="field-label">Project Reference</label>
-                <input id="projRef" placeholder="e.g. PJ-99-001">
+                <input id="projRef" placeholder="e.g. PJ-2025-001">
             </div>
             <div class="form-group">
-                <label class="field-label">Site Name</label>
-                <input id="siteName" placeholder="Location name">
+                <label class="field-label">Site / Location</label>
+                <input id="siteName" placeholder="Site name">
             </div>
             <div class="form-group">
-                <label class="field-label">Client Name</label>
-                <input id="clientName" placeholder="Company Ltd">
+                <label class="field-label">Client</label>
+                <input id="clientName" placeholder="Client name">
             </div>
             <div class="form-group">
-                <label class="field-label">Commissioning Engineer</label>
-                <input id="engineerName" placeholder="Full name">
+                <label class="field-label">Engineer</label>
+                <input id="engineerName" placeholder="Your name">
             </div>
             <div class="form-group">
                 <label class="field-label">Date</label>
@@ -233,39 +234,31 @@
         <div class="form-grid">
             <div class="form-group">
                 <label class="field-label">Item Ref / Tag</label>
-                <input id="itemRef" placeholder="e.g. FD-01">
+                <input id="itemRef" placeholder="e.g. AC-01">
             </div>
             <div class="form-group">
-                <label class="field-label">Equipment / Asset Name</label>
-                <input id="assetName" placeholder="e.g. Extract Fan">
+                <label class="field-label">Equipment Name</label>
+                <input id="assetName" placeholder="e.g. Control Panel">
             </div>
             <div class="form-group">
                 <label class="field-label">Serial Number</label>
-                <input id="serialNo" placeholder="S/N 123456">
+                <input id="serialNo" placeholder="S/N">
             </div>
             <div class="form-group">
-                <label class="field-label">Location / Area</label>
-                <input id="location" placeholder="e.g. Level 1 North">
-            </div>
-            <div class="form-group">
-                <label class="field-label">Test Status</label>
+                <label class="field-label">Status</label>
                 <select id="testStatus">
                     <option value="PASS">✅ Pass</option>
                     <option value="FAIL">❌ Fail</option>
                     <option value="N/A">🔘 N/A</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label class="field-label">Photos</label>
-                <input type="file" id="itemPhotos" multiple accept="image/*">
-            </div>
             <div class="form-group full">
-                <label class="field-label">Observations / Comments</label>
-                <textarea id="comments" placeholder="Note any defects or adjustments..."></textarea>
+                <label class="field-label">Comments / Defects</label>
+                <textarea id="comments" placeholder="Enter observations..."></textarea>
             </div>
         </div>
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn btn-primary btn-full" onclick="addItem()">➕ Add Item to List</button>
+            <button class="btn btn-primary btn-full" onclick="addItem()">➕ Add Item</button>
             <button class="btn btn-secondary" onclick="copyLast()">🔁 Copy Previous</button>
         </div>
     </div>
@@ -273,7 +266,7 @@
 
 <div class="section">
     <div class="section-header open" onclick="toggleSection(this)">
-        <h2><span class="dot" style="background:var(--accent3)"></span>Commissioning Schedule</h2>
+        <h2><span class="dot" style="background:var(--accent3)"></span>Asset Schedule</h2>
         <span class="chevron">▼</span>
     </div>
     <div class="section-body">
@@ -284,37 +277,33 @@
                         <th>Ref</th>
                         <th>Equipment</th>
                         <th>Serial No</th>
-                        <th>Location</th>
                         <th>Status</th>
                         <th>Comments</th>
-                        <th>Action</th>
+                        <th>Del</th>
                     </tr>
                 </thead>
                 <tbody id="itemTableBody"></tbody>
             </table>
         </div>
-        <div class="form-grid" style="margin-top:15px;">
-            <button class="btn btn-success" onclick="exportToExcel()">📊 Export Excel</button>
-            <button class="btn btn-secondary" onclick="exportImages()">🖼️ Export Photos (ZIP)</button>
-        </div>
+        <button class="btn btn-success btn-full" style="margin-top:15px;" onclick="exportToExcel()">📊 Export Report (Excel)</button>
     </div>
 </div>
 
 <div class="section">
     <div class="section-header" onclick="toggleSection(this)">
-        <h2><span class="dot" style="background:var(--success)"></span>Final Sign-Off</h2>
+        <h2><span class="dot" style="background:var(--success)"></span>Final Client Sign-Off</h2>
         <span class="chevron">▼</span>
     </div>
     <div class="section-body collapsed">
         <div class="form-group" style="margin-bottom:15px;">
-            <label class="field-label">Witnessed By (Client Print Name)</label>
-            <input id="witnessName" placeholder="Client representative">
+            <label class="field-label">Witnessed By (Print Name)</label>
+            <input id="witnessName" placeholder="Client Name">
         </div>
-        <label class="field-label">Client Signature</label>
-        <canvas id="sig-canvas"></canvas>
+        <label class="field-label">Signature</label>
+        <canvas id="sig-canvas" width="600" height="150"></canvas>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn btn-secondary" onclick="clearSig()">Clear</button>
-            <button class="btn btn-primary" onclick="saveSig()">Lock Signature</button>
+            <button class="btn btn-primary" onclick="alert('Signature Captured')">Capture Signature</button>
         </div>
     </div>
 </div>
@@ -333,31 +322,28 @@
             ref: document.getElementById('itemRef').value,
             asset: document.getElementById('assetName').value,
             sn: document.getElementById('serialNo').value,
-            loc: document.getElementById('location').value,
             status: document.getElementById('testStatus').value,
             notes: document.getElementById('comments').value,
             id: Date.now()
         };
-
-        if(!item.ref || !item.asset) return alert("Please enter Ref and Equipment Name");
-        
+        if(!item.ref) return alert("Please enter an Item Reference");
         items.push(item);
         renderTable();
-        document.getElementById('itemRef').value = ''; // Reset partial
+        // Reset inputs
+        document.getElementById('itemRef').value = '';
         document.getElementById('serialNo').value = '';
         document.getElementById('comments').value = '';
     }
 
     function renderTable() {
         const body = document.getElementById('itemTableBody');
-        body.innerHTML = items.map((it, idx) => `
+        body.innerHTML = items.map(it => `
             <tr>
                 <td><b>${it.ref}</b></td>
                 <td>${it.asset}</td>
                 <td>${it.sn}</td>
-                <td>${it.loc}</td>
                 <td><span class="status-badge ${it.status === 'PASS' ? 'status-pass' : 'status-fail'}">${it.status}</span></td>
-                <td style="max-width:200px; white-space:normal;">${it.notes}</td>
+                <td>${it.notes}</td>
                 <td><button onclick="deleteItem(${it.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;">✕</button></td>
             </tr>
         `).join('');
@@ -373,25 +359,24 @@
         if(items.length === 0) return;
         const last = items[items.length - 1];
         document.getElementById('assetName').value = last.asset;
-        document.getElementById('location').value = last.loc;
         document.getElementById('testStatus').value = last.status;
     }
 
-    // SIGNATURE LOGIC
+    // SIGNATURE
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
 
-    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e.touches[0]); });
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
-    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchend', stopDraw);
 
-    function startDrawing(e) { 
-        drawing = true; 
-        ctx.beginPath(); 
+    function startDraw(e) {
+        drawing = true;
+        ctx.beginPath();
         const rect = canvas.getBoundingClientRect();
         ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
     }
@@ -399,49 +384,28 @@
         if (!drawing) return;
         const rect = canvas.getBoundingClientRect();
         ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.strokeStyle = '#e8e8f0';
+        ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         ctx.stroke();
     }
-    function stopDrawing() { drawing = false; }
+    function stopDraw() { drawing = false; }
     function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-    function saveSig() { alert("Signature Locked to Project Document"); }
 
-    // EXPORT LOGIC
+    // EXCEL EXPORT
     function exportToExcel() {
-        const wsData = [
-            ["PROJECT SIGN-OFF REPORT"],
-            ["Ref:", document.getElementById('projRef').value],
+        const data = [
+            ["COMMISSIONING SIGN-OFF REPORT"],
+            ["Project:", document.getElementById('projRef').value],
             ["Site:", document.getElementById('siteName').value],
-            ["Client:", document.getElementById('clientName').value],
             ["Engineer:", document.getElementById('engineerName').value],
-            ["Date:", document.getElementById('commDate').value],
             [],
-            ["Ref", "Equipment", "Serial No", "Location", "Status", "Observations"]
+            ["Ref", "Equipment", "Serial No", "Status", "Comments"]
         ];
-        
-        items.forEach(i => wsData.push([i.ref, i.asset, i.sn, i.loc, i.status, i.notes]));
-        
+        items.forEach(i => data.push([i.ref, i.asset, i.sn, i.status, i.notes]));
+        const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
         XLSX.utils.book_append_sheet(wb, ws, "Commissioning");
-        XLSX.writeFile(wb, `Comm_Report_${document.getElementById('projRef').value}.xlsx`);
-    }
-
-    async function exportImages() {
-        const zip = new JSZip();
-        const fileInput = document.getElementById('itemPhotos');
-        if(fileInput.files.length === 0) return alert("No photos selected for export");
-        
-        for (let i = 0; i < fileInput.files.length; i++) {
-            zip.file(fileInput.files[i].name, fileInput.files[i]);
-        }
-        
-        const content = await zip.generateAsync({type:"blob"});
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
-        link.download = "Project_Photos.zip";
-        link.click();
+        XLSX.writeFile(wb, "Commissioning_Report.xlsx");
     }
 </script>
 
